@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SuperOffice Signatur-fixer</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      color: #222;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      padding: 2rem;
+      width: 100%;
+      max-width: 760px;
+    }
+    h1 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      color: #02423d;
+    }
+    .subtitle {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 1.5rem;
+    }
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #444;
+      margin-bottom: 0.4rem;
+    }
+    textarea {
+      width: 100%;
+      height: 180px;
+      font-size: 0.8rem;
+      font-family: monospace;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 0.75rem;
+      resize: vertical;
+      background: #fafafa;
+      color: #222;
+    }
+    textarea:focus { outline: none; border-color: #02423d; }
+    .actions {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+    button {
+      padding: 0.6rem 1.4rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-primary {
+      background: #02423d;
+      color: #fff;
+    }
+    .btn-primary:hover { background: #015048; }
+    .btn-secondary {
+      background: #e8e8e8;
+      color: #333;
+    }
+    .btn-secondary:hover { background: #d8d8d8; }
+    .divider {
+      border: none;
+      border-top: 1px solid #eee;
+      margin: 1.5rem 0;
+    }
+    .result-area { display: none; }
+    .result-area.visible { display: block; }
+    .copy-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.4rem;
+    }
+    .badge {
+      font-size: 0.75rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+    .badge-success { background: #e0f4ef; color: #026d56; }
+    .badge-error { background: #fdecea; color: #c0392b; }
+    #copyBtn {
+      font-size: 0.8rem;
+      padding: 0.35rem 0.9rem;
+      background: #f0f0f0;
+      color: #333;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #copyBtn:hover { background: #e2e2e2; }
+    #output {
+      width: 100%;
+      height: 180px;
+      font-size: 0.8rem;
+      font-family: monospace;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 0.75rem;
+      resize: vertical;
+      background: #f4fbf9;
+      color: #222;
+    }
+    .stats {
+      display: flex;
+      gap: 1rem;
+      margin-top: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .stat {
+      font-size: 0.8rem;
+      color: #666;
+    }
+    .stat span { font-weight: 600; color: #02423d; }
+    .preview-wrap {
+      margin-top: 1.5rem;
+    }
+    .preview-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #444;
+      margin-bottom: 0.5rem;
+    }
+    .preview-box {
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 1rem;
+      background: #fff;
+      overflow: auto;
+    }
+    .info-box {
+      background: #f0f8ff;
+      border-left: 3px solid #02423d;
+      border-radius: 0 6px 6px 0;
+      padding: 0.75rem 1rem;
+      font-size: 0.85rem;
+      color: #444;
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+    }
+    .error-box {
+      background: #fdecea;
+      border-left: 3px solid #e74c3c;
+      border-radius: 0 6px 6px 0;
+      padding: 0.75rem 1rem;
+      font-size: 0.85rem;
+      color: #c0392b;
+      margin-top: 1rem;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>SuperOffice Signatur-fixer</h1>
+    <p class="subtitle">Lim inn HTML-koden fra SuperOffice sin signatur-editor, klikk «Fiks signatur», og kopier den rensede koden tilbake.</p>
+
+    <div class="info-box">
+      <strong>Slik bruker du verktøyet:</strong><br>
+      1. Åpne signatureditor i SuperOffice → klikk <code>&lt;&gt;</code> (kildekode)<br>
+      2. Merk alt og lim inn i feltet under<br>
+      3. Klikk «Fiks signatur» og kopier resultatet<br>
+      4. Lim den fikset koden tilbake i SuperOffice sin kildekode-visning
+    </div>
+
+    <label for="input">Lim inn HTML her</label>
+    <textarea id="input" placeholder="&lt;!DOCTYPE html&gt;&lt;html&gt;..."></textarea>
+
+    <div class="error-box" id="errorBox"></div>
+
+    <div class="actions">
+      <button class="btn-primary" onclick="fixSignature()">Fiks signatur</button>
+      <button class="btn-secondary" onclick="clearAll()">Nullstill</button>
+    </div>
+
+    <hr class="divider">
+
+    <div class="result-area" id="resultArea">
+      <div class="copy-row">
+        <label style="margin:0">Fikset HTML</label>
+        <button id="copyBtn" onclick="copyOutput()">Kopier</button>
+      </div>
+      <textarea id="output" readonly></textarea>
+
+      <div class="stats" id="stats"></div>
+
+      <div class="preview-wrap">
+        <div class="preview-label">Forhåndsvisning</div>
+        <div class="preview-box" id="preview"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function fixSignature() {
+      const input = document.getElementById('input').value.trim();
+      const errorBox = document.getElementById('errorBox');
+      errorBox.style.display = 'none';
+
+      if (!input) {
+        errorBox.textContent = 'Feltet er tomt – lim inn HTML-koden først.';
+        errorBox.style.display = 'block';
+        return;
+      }
+
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(input, 'text/html');
+
+      let borderCount = 0;
+      let attrCount = 0;
+
+      const allTds = doc.querySelectorAll('td');
+      allTds.forEach(td => {
+        const style = td.getAttribute('style') || '';
+
+        const isLogoCell =
+          td.querySelector('img') &&
+          (style.includes('padding-right') || style.includes('width: 130') || style.includes('width: 128'));
+
+        const isDisclaimerCell =
+          !td.querySelector('table') &&
+          td.textContent.includes('konfidensielt');
+
+        let newStyle = style;
+
+        if (isLogoCell) {
+          newStyle = removeAllBorders(newStyle);
+          newStyle = addStyle(newStyle, 'border', 'none');
+          newStyle = addStyle(newStyle, 'border-right', '1px solid rgb(204, 204, 204)');
+          borderCount++;
+        } else if (isDisclaimerCell) {
+          newStyle = removeAllBorders(newStyle);
+          newStyle = addStyle(newStyle, 'border', 'none');
+          newStyle = addStyle(newStyle, 'border-top', '1px solid rgb(204, 204, 204)');
+          borderCount++;
+        } else {
+          if (hasBorder(newStyle)) {
+            newStyle = removeAllBorders(newStyle);
+            newStyle = addStyle(newStyle, 'border', 'none');
+            borderCount++;
+          }
+        }
+
+        if (newStyle !== style) td.setAttribute('style', newStyle);
+
+        ['fr-original-style', 'fr-original-class', 'border-image'].forEach(attr => {
+          if (td.hasAttribute(attr)) { td.removeAttribute(attr); attrCount++; }
+        });
+      });
+
+      doc.querySelectorAll('[fr-original-style], [fr-original-class]').forEach(el => {
+        el.removeAttribute('fr-original-style');
+        el.removeAttribute('fr-original-class');
+        attrCount++;
+      });
+
+      const body = doc.body;
+      const result = body ? body.innerHTML : doc.documentElement.outerHTML;
+
+      document.getElementById('output').value = result;
+      document.getElementById('resultArea').classList.add('visible');
+      document.getElementById('preview').innerHTML = result;
+
+      const stats = document.getElementById('stats');
+      stats.innerHTML = `
+        <div class="stat">Bordere fjernet/justert: <span>${borderCount}</span></div>
+        <div class="stat">Unødvendige attributter fjernet: <span>${attrCount}</span></div>
+      `;
+    }
+
+    function hasBorder(style) {
+      return /border\s*:/.test(style) || /border-(top|right|bottom|left|width|style|color)\s*:/.test(style);
+    }
+
+    function removeAllBorders(style) {
+      return style
+        .replace(/border-image\s*:[^;]+;?/gi, '')
+        .replace(/border-(top|right|bottom|left)(-width|-style|-color)?\s*:[^;]+;?/gi, '')
+        .replace(/border-(width|style|color)\s*:[^;]+;?/gi, '')
+        .replace(/border\s*:[^;]+;?/gi, '')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+    }
+
+    function addStyle(style, prop, value) {
+      const base = style.replace(/;\s*$/, '').trim();
+      return base ? `${base}; ${prop}: ${value};` : `${prop}: ${value};`;
+    }
+
+    function copyOutput() {
+      const out = document.getElementById('output');
+      out.select();
+      document.execCommand('copy');
+      const btn = document.getElementById('copyBtn');
+      btn.textContent = 'Kopiert!';
+      setTimeout(() => btn.textContent = 'Kopier', 2000);
+    }
+
+    function clearAll() {
+      document.getElementById('input').value = '';
+      document.getElementById('output').value = '';
+      document.getElementById('resultArea').classList.remove('visible');
+      document.getElementById('errorBox').style.display = 'none';
+      document.getElementById('preview').innerHTML = '';
+    }
+  </script>
+</body>
+</html>
